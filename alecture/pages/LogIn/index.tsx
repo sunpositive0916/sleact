@@ -7,7 +7,7 @@ import { Link, Redirect } from 'react-router-dom';
 import useSWR from 'swr';
 
 const LogIn = () => {
-  const { data, error, revalidate } = useSWR('/api/users', fetcher);
+  const { data, error, revalidate, mutate } = useSWR('/api/users', fetcher);
   const [logInError, setLogInError] = useState(false);
   const [email, onChangeEmail] = useInput('');
   const [password, onChangePassword] = useInput('');
@@ -24,7 +24,9 @@ const LogIn = () => {
           },
         )
         .then((response) => {
-          revalidate();
+          // optimistic ui(시각적 효과를 먼저 처리하고 그 후에 점검)로 하고싶으면 두번째 값을 true로 하면 됨, false는 서버 검사를 아예 안함
+          mutate(response.data, false); // 서버에 요청하지 않고 데이터를 수정
+          // revalidate(); // 서버로 요청을 다시 보내서 데이터를 다시 가져옴
         })
         .catch((error) => {
           setLogInError(error.response?.data?.statusCode === 401);
